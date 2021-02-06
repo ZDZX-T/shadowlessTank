@@ -4,6 +4,7 @@ import os  # 目录操作
 import shutil  # 文件操作
 import time  # 延时
 
+print('o2i_v1.0-beta.2', '\n')  # 输出版本信息
 
 # 初始化路径
 with open('path.txt', 'r', encoding='utf-8') as f:
@@ -25,6 +26,7 @@ with open('path.txt', 'r', encoding='utf-8') as f:
     f.readline()
     line = f.readline()
     skip = line[0]
+"""
 print('file_path:\t', file_path,
       '\ninput_path:\t', input_path,
       '\noutput_path:\t', output_path,
@@ -32,6 +34,7 @@ print('file_path:\t', file_path,
       '\ndownload_path:\t', download_path,
       '\n\n\n',
       end='')
+"""
 
 # 初始化网页
 browser = webdriver.Chrome()
