@@ -149,8 +149,7 @@ if __name__ == '__main__':
         download_complete_path = download_path + i  # 完整的下载的图片的路径
         gan_hao_shi_complete_path = gan_hao_shi_path + i  # 完整的输出路径
         if os.path.exists(gan_hao_shi_complete_path):
-            print('\033[0;31m', '\n', 'gan_hao_shi文件夹已有 ', i, ' ,程序暂停。',
-                  '\033[0m', end='')
+            print('\n', 'gan_hao_shi文件夹已有 ', i, ' ,程序暂停。', end='')
             os.popen('explorer /select,' + gan_hao_shi_complete_path)
             input('按回车继续转移:')
         try:  # 尝试转移
@@ -167,7 +166,7 @@ if __name__ == '__main__':
         print('监测到有冗余文件，请手动清理:')
         for i in files_after:
             if i not in files_before:
-                print('\033[0;31m', i, '\033[0m', '\n', end='')
+                print(i)
         os.startfile(download_path)  # 打开下载目录
 
     f.close()
