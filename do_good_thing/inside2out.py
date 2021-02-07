@@ -4,7 +4,8 @@ import os  # 目录操作
 import shutil  # 文件操作
 import time  # 延时
 import sys  # 强制退出程序用
-import datetime
+import datetime  # 得到当前时间
+import i2o_helper  # 自己的程序，帮助设置模式
 
 
 def exit_file(x):  # 退出程序
@@ -14,87 +15,11 @@ def exit_file(x):  # 退出程序
 
 
 if __name__ == '__main__':
+    print('i2o_v1.1-beta.1', '\n')   # 输出版本信息
+
     # 初始化设置
-    with open('settings.txt', 'r', encoding='utf-8') as f:  # 读入设置文件
-        print_path = int(f.readline()[:-1])
-        match_mod = int(f.readline()[:-1])
-        match_mod2 = int(f.readline()[:-1])
-        msg = f.readline()[:-1]
-        compress_level = int(f.readline()[:-1])
-        auto23 = int(f.readline()[:-1])
-        auto4 = int(f.readline()[:-1])
-
-    if auto23 == 1:  # 自动设置图片匹配模式和命名模式
-        print('里图匹配模式:', end='')
-        if match_mod == 1:
-            print('等量匹配')
-        elif match_mod == 2:
-            print('反复使用同一张表图')
-        else:
-            exit_file(0)
-
-        print('图片命名模式:', end='')
-        if match_mod2 == 1:
-            print('使用表图名称')
-        elif match_mod2 == 2:
-            print('使用前缀+序号')
-            match_mod_code = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
-            match_mod_num = input('请输入起始序号:')
-            if match_mod_code == '' or match_mod_num.isdigit() is False:
-                exit_file(0)
-            match_mod_num = int(match_mod_num)
-        elif match_mod2 == 3:
-            print('使用里图名称')
-        else:
-            exit_file(0)
-
-    else:  # 手动设置图片匹配模式和命名模式
-        match_mod = int(input('请设置里图匹配模式:\n'
-                              '1.等量匹配(表图用完时停止合成)(我就是表图多,你随便合)\n'
-                              '2.反复使用同一张表图(我就一张表图啦)\n'))
-        if match_mod == 1:
-            match_mod2 = int(input('请设置输出图片命名模式:\n'
-                                   '1.使用表图名称\n'
-                                   '2.使用前缀+序号\n'
-                                   '3.使用里图名称\n'))
-            if match_mod2 == 2:
-                match_mod_code = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
-                match_mod_num = input('请输入起始序号:')
-                if match_mod_code == '' or match_mod_num.isdigit() is False:
-                    exit_file(0)
-                match_mod_num = int(match_mod_num)
-            elif match_mod2 != 1 and match_mod2 != 3:
-                exit_file(0)
-        elif match_mod == 2:
-            match_mod2 = int(input('请设置输出图片命名模式:\n'
-                                   ' .-----------\n'
-                                   '2.使用前缀+序号\n'
-                                   '3.使用里图名称\n'))
-            if match_mod2 == 2:
-                match_mod_code = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
-                match_mod_num = input('请输入起始序号:')
-                if match_mod_code == '' or match_mod_num.isdigit() is False:
-                    exit_file(0)
-                match_mod_num = int(match_mod_num)
-            elif match_mod2 != 3:
-                exit_file(0)
-        else:
-            exit_file(0)
-
-    if auto4 == 1:  # 自动设置水印信息
-        print('水印信息:', msg)
-    else:
-        msg = input('请输入水印信息:')
-
-    if compress_level == 5:  # 值为5时，需手动设置水印信息
-        compress_level = int(input('请输入压缩程度,0表示自动采用系统推荐,1-4表示强制使用给定的压缩度:'))
-    if compress_level < 0 or compress_level >= 5:
-        exit_file(0)
-    print('压缩程度:', end='')
-    if compress_level == 0:
-        print('采用系统推荐')
-    else:
-        print(compress_level)
+    mod = i2o_helper.DATA()
+    mod.select_mod()  # 选择模式
 
     # 初始化路径
     with open('path.txt', 'r', encoding='utf-8') as f:
@@ -120,16 +45,7 @@ if __name__ == '__main__':
         xpath_make_tank = line[:-1]  # “制作坦克”
         line = f.readline()
         xpath_button = line[:-1]  # “合成图片”
-    if print_path == 1:
-        print('html: ', file_path,
-              '\noutside_path: ', outside_path,
-              '\ninside_path: ', inside_path,
-              '\ngan_hao_shi_path: ', gan_hao_shi_path,
-              '\ndownload_path: ', download_path,
-              '\nxpath_make_tank: ', xpath_make_tank,
-              '\nxpath_button: ', xpath_button,
-              '\n\n',
-              end='')
+    print('\ndownload_path: ', download_path, '\n\n', end='')  # 只调试download_path
 
     # 初始化网页
     browser = webdriver.Chrome()
@@ -143,10 +59,11 @@ if __name__ == '__main__':
     input_button = browser.find_element_by_xpath(xpath_button)  # 定位“合成图片”
     output_save = browser.find_element_by_id('a1')  # 定位“保存图片”
 
-    if compress_level != 0:  # 非采用系统推荐
-        input_compress.send_keys(str(compress_level))
-    sentence = 'arguments[0].text = \'' + msg + '\''  # 合成水印信息
-    browser.execute_script(sentence, input_msg)  # 输入水印内容
+    if mod.compress_level != 0:  # 非采用系统推荐
+        input_compress.send_keys(str(mod.compress_level))  # 选择表图压缩度
+    watermark_msg = 'arguments[0].value = \'' + mod.watermark_main + '\''  # 合成水印信息
+    if mod.watermark_num_enable == 0:  # 不是本子模式，水印上传一遍即可
+        browser.execute_script(watermark_msg, input_msg)  # 输入水印内容
 
     # 初始化log与合成文件名记录
     f = open('log.txt', 'a', encoding='utf-8')
@@ -161,11 +78,16 @@ if __name__ == '__main__':
     files_inside_num = len(files_inside)  # 里图总个数
     compos_counter = 0  # 合成计数
     for i in files_inside:  # 循环处理inside
-        compos_counter += 1
-        print(compos_counter, '/', files_inside_num, ' ', end='')
         inside_complete_path = os.path.join(inside_path, i)
+        if mod.watermark_num_enable == 1:  # 造本模式，则水印需要每次都设置
+            watermark_msg = i[:-4]  # 先提取一下文件名称
+            if watermark_msg[-1] == '.':  # 原文件名为.jpeg
+                watermark_msg = watermark_msg[:-1]  # 再去一位
+            watermark_msg = mod.watermark_main + ' ' + watermark_msg  # 合成完整水印名称
+            watermark_msg = 'arguments[0].value = \'' + watermark_msg + '\''  # 合成水印js信息
+            browser.execute_script(watermark_msg, input_msg)  # 输入水印内容
         img_size = os.path.getsize(inside_complete_path)  # 得到里图大小
-        if compress_level == 0:  # 采用系统推荐
+        if mod.compress_level == 0:  # 采用系统推荐
             if img_size < 500 * 1024:  # 里图小于0.5M
                 input_compress.send_keys('1')
             elif img_size < 1000 * 1024:  # 里图小于1M
@@ -175,24 +97,24 @@ if __name__ == '__main__':
             else:  # 里图大于等于1.5M
                 input_compress.send_keys('4')
 
-        files_outside = os.listdir(outside_path)  # 获得表图
+        files_outside = os.listdir(outside_path)  # 获得所有表图
         if len(files_outside) == 0:
             break
         outside_complete_path = os.path.join(outside_path, files_outside[0])  # 获得表图文件路径
-        if match_mod2 == 1:
+        if mod.img_name_mod == 1:
             download_name = files_outside[0]
             download_name = download_name[:-3]
             if download_name[-1] == '.':
                 download_name = download_name[:-1]
-        elif match_mod2 == 2:
-            download_name = match_mod_code + '_' + str(match_mod_num)
-            match_mod_num += 1
-        elif match_mod2 == 3:
+        elif mod.img_name_mod == 2:
+            download_name = mod.img_name_head + '_' + str(mod.img_name_tail)
+            mod.img_name_tail += 1
+        elif mod.img_name_mod == 3:
             download_name = i[:-3]
             if download_name[-1] == '.':
                 download_name = download_name[:-1]
         download_name = download_name + '.png'
-        sentence = 'arguments[0].download = \'' + download_name + '\''  # 设置下载图片的名称
+        output_name = 'arguments[0].download = \'' + download_name + '\''  # 设置下载图片的名称
 
         input_outside.send_keys(outside_complete_path)  # 上传表图
         input_inside.send_keys(inside_complete_path)  # 上传里图
@@ -203,8 +125,10 @@ if __name__ == '__main__':
         if alert:
             alert.accept()  # 处理弹窗
         else:
+            compos_counter += 1
+            print(compos_counter, '/', files_inside_num, ' ', end='')
             time.sleep(0.1)  # 给系统反应时间
-            browser.execute_script(sentence, output_save)  # 设置合成图名称
+            browser.execute_script(output_name, output_save)  # 设置合成图名称
             time.sleep(0.1)  # 给系统反应时间
             output_save.click()
             log_msg = i + ' -> ' + download_name
@@ -213,9 +137,9 @@ if __name__ == '__main__':
             inside_used_complete_path = inside_used_path + i  # 完整的使用过的里图的路径
             shutil.move(inside_complete_path, inside_used_complete_path)  # 将使用的里图放入inside_used文件夹
             download_list.append(download_name)  # 记录下载图片名称
-            if match_mod == 1:  # 等量匹配
+            if mod.img_match_mod == 1:  # 等量匹配
                 outside_used_complete_path = outside_used_path + files_outside[0]  # 完整的使用过的表图的路径
-                shutil.move(outside_complete_path, outside_used_complete_path)
+                shutil.move(outside_complete_path, outside_used_complete_path)  # 使用过的表图移入outside_used
         # input('调试状态,waiting for enter:')
 
     # 转移图片

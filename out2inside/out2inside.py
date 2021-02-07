@@ -26,15 +26,7 @@ with open('path.txt', 'r', encoding='utf-8') as f:
     f.readline()
     line = f.readline()
     skip = line[0]
-"""
-print('file_path:\t', file_path,
-      '\ninput_path:\t', input_path,
-      '\noutput_path:\t', output_path,
-      '\nerror_path:\t', error_path,
-      '\ndownload_path:\t', download_path,
-      '\n\n\n',
-      end='')
-"""
+print('\ndownload_path:\t', download_path, '\n\n', end='')  # 只调试download_path
 
 # 初始化网页
 browser = webdriver.Chrome()
