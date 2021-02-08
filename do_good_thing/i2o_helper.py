@@ -202,7 +202,7 @@ class DATA:
             print('请选择一个模式:\n0.创建一个新模式')
             counter = 1
             for i in settings_files_name:
-                print(counter, ':', i[:-4], '\n', end='')
+                print(counter, '.', i[:-4], '\n', end='')
                 counter += 1
             select = int(input())
             if select < 0 or select >= counter:  # 非法数据
