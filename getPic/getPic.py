@@ -49,7 +49,7 @@ def get_path():  # 获得input文件夹的路径
     return path
 
 
-def get_setting():
+def get_setting():  # 得到关于自动转换图片的设置
     f = open('auto_trans.txt', 'r', encoding='utf-8')
     auto = int(f.readline()[0])
     f.close()
@@ -74,7 +74,7 @@ def write_back(dic):  # 写回访问记录
     f.close()
 
 
-def download_pic(u):
+def download_pic(u):  # 下载图片
     i = -1
     while u[i] != '/':
         i -= 1
@@ -94,6 +94,8 @@ if __name__ == "__main__":
     auto_trans = get_setting()  # 获得关于自动调用的设定
     while 1:
         url = input('请输入帖子网址(直接按回车则退出程序):')
+        if url == '':
+            break
         base_url = get_base(url)  # 得到原始信息
         if base_url in memory.keys():  # 如果曾经访问过
             begin_num = memory[base_url]  # 得到之前到达的楼层
