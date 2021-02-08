@@ -145,6 +145,7 @@ if __name__ == "__main__":
             # print('page: ', page)
             # input('调试模式，输入回车:')
             page += 1  # 翻到下一页
+        trans = 0
         if auto_trans == 2:
             trans = int(input('是否进行图片转换？ 0不进行 1进行  :'))
         if auto_trans == 1 or trans == 1:
