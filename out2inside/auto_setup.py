@@ -1,6 +1,24 @@
 import os
 import getpass
 from pathlib import Path
+import time
+
+
+def remind():
+    print('3')
+    time.sleep(0.5)
+    print('.')
+    time.sleep(0.5)
+    print('2')
+    time.sleep(0.5)
+    print('.')
+    time.sleep(0.5)
+    print('1')
+    time.sleep(0.5)
+    print('.')
+    time.sleep(0.5)
+    print('0')
+    time.sleep(0.5)
 
 
 def check_environment():
@@ -36,7 +54,7 @@ def check_environment():
         f = open('path.txt', 'r', encoding='utf-8')
         lines_num = len(f.readlines())
         # print('总行数:', lines_num)
-        if lines_num < 10:  # 小于说明不是最新的版本
+        if lines_num < 12:  # 小于说明不是最新的版本
             renew = 1
         f.close()
     if renew == 1:
@@ -53,5 +71,9 @@ def check_environment():
         f.write('0\n')
         f.write('是否自动尝试解套娃  0不自动解套娃，不询问  1自动解套娃  2不自动解套娃，但询问\n')
         f.write('2\n')
+        f.write('是否提前判断及将输入的图片是否为坦克(启用后可降低页面无响应几率)？ 0不提前判断 1提前判断 2询问\n')
+        f.write('1\n')
         f.close()
-        print('“下载”文件夹的路径被更新，请检查是否正确')
+        print('\n“下载”文件夹的路径被更新，请检查是否正确'
+              '\n所有设置被重置，请在path.txt重新设置')
+        remind()

@@ -5,9 +5,10 @@ import shutil  # 文件操作
 import time  # 延时
 import auto_setup  # 自己的程序，检查环境是否完整
 from pathlib import Path  # 检查文件是否存在
+import tk_helper  # 先行判断一张图片是否为坦克
 
 
-print('o2i_v1.1-beta.1', '\n')  # 输出版本信息
+print('o2i_v1.2.1', '\n')  # 输出版本信息
 print('提示:因兼容性问题，部分输出语句会以\" b\' \"开头，以\" \' \"结尾。且本程序被其他程序调用时，中文部分可能变为其他字符。')
 print('Tip: due to compatibility problems, some output statements will start with \" b\' \" and end with \" \' \". \n'
       'And when this program is called by other programs, the Chinese part may become other characters.')
@@ -35,11 +36,16 @@ with open('path.txt', 'r', encoding='utf-8') as f:
 
     f.readline()
     auto_dolls = int(f.readline()[0])  # 是否自动解套娃
+
+    f.readline()
+    test_tank = int(f.readline()[0])  # 是否提前判断是否为坦克
 print('\ndownload_path:\t', download_path, '\n\n', end='')  # 只调试download_path
 
-# 初始化是否自动解套娃的设置
+# 初始化是否自动解套娃的设置 是否提前判断是否为坦克的设置
 if auto_dolls == 2:
     auto_dolls = int(input('本次转换是否尝试解套娃？ 0否 1是  :'))
+if test_tank == 2:
+    test_tank = int(input('本次转换是否提前判断是否为坦克？ 0否 1是  :'))
 
 # 初始化网页
 browser = webdriver.Chrome()
@@ -71,6 +77,10 @@ while now_mod > 0:
             rel_path = os.path.join(input_path, i)  # 合成图片路径，没有进入套娃模式时图片来自input
         else:
             rel_path = os.path.join(download_path, i)  # 合成图片路径，进入套娃模式时图片来自download
+        if test_tank == 1 and tk_helper.is_tank(rel_path) == 0:  # 开启了提前验证坦克，且提前验证结果为 非坦克
+            print(str(i).encode('utf-8'), '被提前判断为可能不是坦克，如果其位于input，那么其将停留在input，本次转换完成后请人工核验。'
+                                          '如需强制转换请到path.txt更改设置')
+            continue
         browser.find_element_by_id('ipt2').send_keys(rel_path)  # 上传图片
         time.sleep(0.3)  # 防止来不及弹出alert
         alert = EC.alert_is_present()(browser)  # 检查图片是否读取失败
@@ -116,7 +126,7 @@ print('\n', end='')  # 转换阶段完成，打个空行
 
 # 重新输出无法打开的文件名
 if len(error_list) != 0:
-    print('共有{}个图片无法打开,名称分别为:'.format(files_num_origin - download_counter_origin))
+    print('共有{}个图片未打开,名称分别为:'.format(len(error_list)))
     for i in error_list:
         print('\t', i)
     print('\n', end='')  # 报错阶段完成，打个空行
@@ -148,3 +158,15 @@ print('input共{}个图片,其中{}个可读取,{}个锤子'.format(files_num_or
                                           files_num_origin - download_counter_origin), end='')
 if skip == '0':
     print(',净输出{}张图片'.format(move_counter))
+
+# 处理input内的剩余文件
+files = os.listdir(input_path)
+if len(files) != 0:
+    print('input文件夹内仍有剩余文件，两秒后自动打开input文件夹')
+    time.sleep(2)
+    os.startfile(input_path)
+    print('请进行必要的处理，处理后请选择:')
+    todo = int(input('是否将现存于input内的文件移入error？ 0否 1是  :'))
+    if todo == 1:
+        for i in files:
+            shutil.move(input_path + i, error_path + i)
