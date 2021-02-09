@@ -1,6 +1,6 @@
 o2i_v1.1-beta.1
 增加自动解套娃功能
-将auto_setup内置于out2inside中
+将auto_setup的功能内置于out2inside中，且新版本替换掉旧版本后可直接使用，不用再次从头创建环境
 修复了当里图名称是韩文时程序崩溃的bug
 
 o2i_v1.0-beta.2 —— 2021年2月6日13:48:21
