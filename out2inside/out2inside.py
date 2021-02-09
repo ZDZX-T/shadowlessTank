@@ -116,7 +116,7 @@ print('\n', end='')  # 转换阶段完成，打个空行
 
 # 重新输出无法打开的文件名
 if len(error_list) != 0:
-    print('共有{}个图片无法打开,名称分别为:'.format(files_num - download_counter))
+    print('共有{}个图片无法打开,名称分别为:'.format(files_num_origin - download_counter_origin))
     for i in error_list:
         print('\t', i)
     print('\n', end='')  # 报错阶段完成，打个空行
