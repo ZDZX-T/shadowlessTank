@@ -80,8 +80,9 @@ def download_pic(u):  # 下载图片
         i -= 1
     pic_name = u[i+1:]
     print(pic_counter, ': ', pic_name)
+    u = 'http://imgsrc.baidu.com/forum/pic/item/' + pic_name
     request.urlretrieve(u, input_path + pic_name)
-    time.sleep(0.3)
+    time.sleep(0.1)
 
 
 if __name__ == "__main__":
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     exe_path = destination_path + 'out2inside.exe'
     auto_trans = get_setting()  # 获得关于自动调用的设定
     while 1:
-        url = input('请输入帖子网址(直接按回车则退出程序):')
+        url = input('\n请输入帖子网址:')
         if url == '':
             break
         base_url = get_base(url)  # 得到原始信息
@@ -107,7 +108,7 @@ if __name__ == "__main__":
         if cin != '':
             print('收到，将从', int(cin), '楼开始访问')
             begin_num = int(cin) - 1  # 因为访问的条件是楼层数>begin_num，因此-1
-        cin = input('直接输入回车访问所有人，输入任意内容只访问楼主')
+        cin = input('直接输入回车访问所有人，输入任意内容只访问楼主:')
         if cin == '':
             only_master = 0  # 访问所有人
         else:
