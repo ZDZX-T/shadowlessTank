@@ -15,7 +15,7 @@ def is_tank(path):
         return 0
     black = 0  # 是否查找到了黑色
     white = 0  # 是否查找到了白色
-    for j in range(12, 15):
+    for j in range(4, 20):
         for i in range(0, 28):
             r, g, b = img_rgb.getpixel((i, j))
             if r >= threshold_white and g >= threshold_white and b >= threshold_white:  # 可以判断为白色了

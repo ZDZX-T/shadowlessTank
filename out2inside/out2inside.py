@@ -6,9 +6,11 @@ import time  # 延时
 import auto_setup  # 自己的程序，检查环境是否完整
 from pathlib import Path  # 检查文件是否存在
 import tk_helper  # 先行判断一张图片是否为坦克
+import sys  # 强制退出程序用
+import traceback  # 输出错误信息
 
 
-print('o2i_v1.2.2', '\n')  # 输出版本信息
+print('o2i_v1.2.3', '\n')  # 输出版本信息
 print('提示:因兼容性问题，部分输出语句会以\" b\' \"开头，以\" \' \"结尾。且本程序被其他程序调用时，中文部分可能变为其他字符。')
 print('Tip: due to compatibility problems, some output statements will start with \" b\' \" and end with \" \' \". \n'
       'And when this program is called by other programs, the Chinese part may become other characters.')
@@ -48,7 +50,19 @@ if test_tank == 2:
     test_tank = int(input('本次转换是否提前判断是否为坦克？ 0否 1是  :'))
 
 # 初始化网页
-browser = webdriver.Chrome()
+if not Path(file_path[7:]).exists():  # 检查wytk.html是否存在
+    print('无法打开wytk.html，确认其是否在文件夹内')
+    input('')
+    sys.exit(0)
+try:  # 尝试打开浏览器
+    browser = webdriver.Chrome()
+except Exception:
+    print('无法打开Chrome浏览器，可能是没有设置系统Path，也可能是Chrome根目录下没有chromedriver.exe')
+    print('无法打开Chrome浏览器，可能是没有设置系统Path，也可能是Chrome根目录下没有chromedriver.exe')
+    print('具体信息:')
+    traceback.print_exc()
+    input('')
+    sys.exit(0)
 browser.get(url=file_path)
 xpath_unfold = r'/html/body/div/details[2]'  # '坦克现形'所在位置
 browser.find_element_by_xpath(xpath_unfold).click()  # 展开“坦克现形”
