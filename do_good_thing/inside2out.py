@@ -6,16 +6,24 @@ import time  # 延时
 import sys  # 强制退出程序用
 import datetime  # 得到当前时间
 import i2o_helper  # 自己的程序，帮助设置模式
+import re  # 提取数字
+import traceback  # 输出错误信息
+from pathlib import Path  # 检测wytk.html是否存在
 
 
-def exit_file(x):  # 退出程序
+def exit_file(x=0):  # 退出程序
     if x == 0:
         print('咦?设置出错了,重启程序解决100%的问题!')
+        input('')
+        sys.exit(0)
+    elif x == 1:
+        print('程序无法继续运行，请根据上文排查错误。')
+        input('')
         sys.exit(0)
 
 
 if __name__ == '__main__':
-    print('i2o_v1.1-beta.1', '\n')   # 输出版本信息
+    print('i2o_v1.2.1', '\n')  # 输出版本信息
 
     # 初始化设置
     mod = i2o_helper.DATA()
@@ -30,8 +38,8 @@ if __name__ == '__main__':
         f.readline()
         line = f.readline()
         line = line[:-1]
-        outside_path = line + 'outside'
-        inside_path = line + 'inside'
+        outside_path = line + 'outside\\'
+        inside_path = line + 'inside\\'
         gan_hao_shi_path = line + 'gan_hao_shi\\'
         outside_used_path = line + 'outside_used\\'
         inside_used_path = line + 'inside_used\\'
@@ -48,7 +56,16 @@ if __name__ == '__main__':
     print('\ndownload_path: ', download_path, '\n\n', end='')  # 只调试download_path
 
     # 初始化网页
-    browser = webdriver.Chrome()
+    if not Path(file_path[7:]).exists():  # 检查wytk.html是否存在
+        print('无法打开wytk.html，确认其是否在文件夹内')
+        exit_file(1)
+    try:
+        browser = webdriver.Chrome()
+    except Exception:
+        print('无法打开Chrome浏览器，可能是没有设置系统Path，也可能是Chrome根目录下没有chromedriver.exe')
+        print('具体信息:')
+        traceback.print_exc()
+        exit_file(1)
     browser.get(url=file_path)
     browser.find_element_by_xpath(xpath_make_tank).click()  # 展开“制作坦克”
 
@@ -78,12 +95,10 @@ if __name__ == '__main__':
     files_inside_num = len(files_inside)  # 里图总个数
     compos_counter = 0  # 合成计数
     for i in files_inside:  # 循环处理inside
-        inside_complete_path = os.path.join(inside_path, i)
+        inside_complete_path = os.path.join(inside_path, i)  # 里图完整路径
         if mod.watermark_num_enable == 1:  # 造本模式，则水印需要每次都设置
-            watermark_msg = i[:-4]  # 先提取一下文件名称
-            if watermark_msg[-1] == '.':  # 原文件名为.jpeg
-                watermark_msg = watermark_msg[:-1]  # 再去一位
-            watermark_msg = mod.watermark_main + ' ' + watermark_msg  # 合成完整水印名称
+            num_in_inside = re.sub('\D', '', str(i).split('.')[0])  # 提取里图文件名中的数字
+            watermark_msg = mod.watermark_main + ' ' + num_in_inside  # 合成完整水印名称
             watermark_msg = 'arguments[0].value = \'' + watermark_msg + '\''  # 合成水印js信息
             browser.execute_script(watermark_msg, input_msg)  # 输入水印内容
         img_size = os.path.getsize(inside_complete_path)  # 得到里图大小
@@ -98,23 +113,28 @@ if __name__ == '__main__':
                 input_compress.send_keys('4')
 
         files_outside = os.listdir(outside_path)  # 获得所有表图
-        if len(files_outside) == 0:
+        if len(files_outside) == 0:  # 没有表图了，退出
             break
+        if mod.img_match_mod == 3:  # 按照名称匹配
+            inside_img_name = str(i).split('.')[0]  # 获取里图文件名，不带后缀
+            for j in files_outside:
+                if str(j).split('.')[0] == inside_img_name:  # 表图文件名与里图文件名一致
+                    files_outside[0] = j  # 零号文件替换为与里图名称一致的图片
+                    break
         outside_complete_path = os.path.join(outside_path, files_outside[0])  # 获得表图文件路径
-        if mod.img_name_mod == 1:
-            download_name = files_outside[0]
-            download_name = download_name[:-3]
-            if download_name[-1] == '.':
-                download_name = download_name[:-1]
-        elif mod.img_name_mod == 2:
+        if mod.img_name_mod == 1:  # 使用表图名称
+            download_name = str(files_outside[0]).split('.')[0]
+        elif mod.img_name_mod == 2:  # 使用前缀+序号，序号自己定
             download_name = mod.img_name_head + '_' + str(mod.img_name_tail)
             mod.img_name_tail += 1
-        elif mod.img_name_mod == 3:
-            download_name = i[:-3]
-            if download_name[-1] == '.':
-                download_name = download_name[:-1]
+        elif mod.img_name_mod == 3:  # 使用里图名称
+            download_name = str(i).split('.')[0]
+        elif mod.img_name_mod == 4:  # 使用前缀+序号，序号来源于里图数字部分
+            download_name = mod.img_name_head + '_' + re.sub('\D', '', str(i).split('.')[0])
+        else:  # 不应该进入
+            download_name = 'download'
         download_name = download_name + '.png'
-        output_name = 'arguments[0].download = \'' + download_name + '\''  # 设置下载图片的名称
+        output_name = 'arguments[0].download = \'' + download_name + '\''  # 设置设置下载图片的名称的js语句
 
         input_outside.send_keys(outside_complete_path)  # 上传表图
         input_inside.send_keys(inside_complete_path)  # 上传里图
@@ -137,7 +157,7 @@ if __name__ == '__main__':
             inside_used_complete_path = inside_used_path + i  # 完整的使用过的里图的路径
             shutil.move(inside_complete_path, inside_used_complete_path)  # 将使用的里图放入inside_used文件夹
             download_list.append(download_name)  # 记录下载图片名称
-            if mod.img_match_mod == 1:  # 等量匹配
+            if mod.img_match_mod == 1 or mod.img_match_mod == 3:  # 等量匹配 或 名称匹配
                 outside_used_complete_path = outside_used_path + files_outside[0]  # 完整的使用过的表图的路径
                 shutil.move(outside_complete_path, outside_used_complete_path)  # 使用过的表图移入outside_used
         # input('调试状态,waiting for enter:')

@@ -7,6 +7,7 @@ import getpass  # 获取用户名
 def exit_file(x=0):  # 退出程序
     if x == 0:
         print('咦?设置出错了,重启程序解决100%的问题!')
+        input('')
         sys.exit(0)
 
 
@@ -53,58 +54,75 @@ class DATA:
 
     # 创建新模式
     def create_new_mod(self):
-        self.img_match_mod = int(input('请设置里图匹配模式:\n'
-                                       '1.等量匹配(表图用完时停止合成)(我就是表图多,你随便合)\n'
-                                       '2.反复使用同一张表图(我就一张表图啦)\n'))
-        if self.img_match_mod == 1:
-            self.img_name_mod = int(input('请设置输出图片命名模式:\n'
-                                          '1.使用表图名称\n'
-                                          '2.使用前缀+序号\n'
-                                          '3.使用里图名称\n'))
-            if self.img_name_mod == 2:
-                self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
-                begin_num = input('请输入起始序号:')
-                if self.img_name_head == '' or begin_num.isdigit() is False:
-                    exit_file(0)
-                self.img_name_tail = int(begin_num)
-            elif self.img_name_mod != 1 and self.img_name_mod != 3:
-                exit_file(0)
-        elif self.img_match_mod == 2:
-            self.img_name_mod = int(input('请设置输出图片命名模式:\n'
-                                          ' .-----------\n'
-                                          '2.使用前缀+序号\n'
-                                          '3.使用里图名称\n'))
-            if self.img_name_mod == 2:
-                self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
-                begin_num = input('请输入起始序号:')
-                if self.img_name_head == '' or begin_num.isdigit() is False:
-                    exit_file(0)
-                self.img_name_tail = int(begin_num)
-            elif self.img_name_mod != 3:
-                exit_file(0)
-        else:
-            exit_file(0)
-
-        self.watermark_main = input('请输入水印信息:')
         print('是否启用造本模式？造本模式会在水印后添加序号，序号依据是里图名称。\n',
-              '启用该模式应保证里图名称全部为纯数字\n',
-              '在当前版本中，启用该模式会更改以下设定:\n',
-              '\t·里图匹配模式强制使用模式二，即多对一\n',
-              '\t·输出图片命名模式强制使用模式二，即前缀+序号\n',
+              '启用该模式应保证里图名称数字部分完全是序号信息\n',
+              '在当前版本中，启用该模式会做出以下设定:\n',
+              '\t·输出图片命名模式强制使用模式四，即前缀+序号，其中序号来源于从里图提取的序号信息\n',
               end='')
         self.watermark_num_enable = int(input('是否启用造本模式？ 0不启用 1启用  :'))
         if self.watermark_num_enable == 1:
-            self.img_match_mod = 2
-            if self.img_name_mod != 2:
-                print('输出图片命名模式更改为:使用前缀+序号')
-                self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
-                begin_num = input('请输入起始序号:')
-                if self.img_name_head == '' or begin_num.isdigit() is False:
-                    exit_file(0)
-                self.img_name_tail = int(begin_num)
-            self.img_name_mod = 2
+            self.img_match_mod = int(input('请设置里图匹配模式:\n'
+                                           '1.等量匹配(表图用完时停止合成)(我就是表图多,你随便合)\n'
+                                           '2.反复使用同一张表图(我就一张表图啦)\n'
+                                           '3.名称匹配(后缀可以不一样)\n'))
+            if self.img_match_mod < 1 or self.img_match_mod > 3:  # 合法性校验
+                exit_file()
+            self.img_name_mod = 4  # 命名模式改为模式四
+            print('输出图片命名模式设置为:使用前缀+序号（序号来源于里图名称的数字部分）')
+            self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
+            self.img_name_tail = -1  # 从里图提取序号
+            if self.img_name_head == '':
+                exit_file(0)
         elif self.watermark_num_enable != 0:
             exit_file()
+
+        if self.watermark_num_enable == 0:  # 不启用造ben模式，则进行图片匹配和命名的设定
+            self.img_match_mod = int(input('请设置里图匹配模式:\n'
+                                           '1.等量匹配(表图用完时停止合成)(我就是表图多,你随便合)\n'
+                                           '2.反复使用同一张表图(我就一张表图啦)\n'
+                                           '3.名称匹配(后缀可以不一样)\n'))
+            if self.img_match_mod == 1 or self.img_match_mod == 3:  # 匹配模式是1或3时
+                self.img_name_mod = int(input('请设置输出图片命名模式:\n'
+                                              '1.使用表图名称\n'
+                                              '2.使用前缀+序号(序号自己设定）\n'
+                                              '3.使用里图名称\n'
+                                              '4.使用前缀+序号(序号来源于里图名称的数字部分）\n'))
+                if self.img_name_mod == 2:  # 使用前缀+序号(序号自己设定）
+                    self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
+                    begin_num = input('请输入起始序号:')
+                    if self.img_name_head == '' or begin_num.isdigit() is False:
+                        exit_file()
+                    self.img_name_tail = int(begin_num)
+                elif self.img_name_mod == 4:  # 使用前缀+序号(序号来源于里图名称的数字部分）
+                    self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
+                    self.img_name_tail = -1
+                    if self.img_name_head == '':
+                        exit_file()
+                elif self.img_name_mod != 1 and self.img_name_mod != 3:
+                    exit_file(0)
+            elif self.img_match_mod == 2:  # 匹配模式是2时
+                self.img_name_mod = int(input('请设置输出图片命名模式:\n'
+                                              ' .-----------\n'
+                                              '2.使用前缀+序号(序号自己定)\n'
+                                              '3.使用里图名称\n'
+                                              '4.使用前缀+序号(序号来源于里图名称的数字部分）\n'))
+                if self.img_name_mod == 2:  # 使用前缀+序号(序号自己设定）
+                    self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
+                    begin_num = input('请输入起始序号:')
+                    if self.img_name_head == '' or begin_num.isdigit() is False:
+                        exit_file()
+                    self.img_name_tail = int(begin_num)
+                elif self.img_name_mod == 4:  # 使用前缀+序号(序号来源于里图名称的数字部分）
+                    self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
+                    self.img_name_tail = -1
+                    if self.img_name_head == '':
+                        exit_file()
+                elif self.img_name_mod != 3:
+                    exit_file(0)
+            else:
+                exit_file(0)
+
+        self.watermark_main = input('请输入水印信息:')
 
         self.compress_level = int(input('请输入压缩程度,0表示自动采用系统推荐,1-4表示强制使用给定的压缩度:'))
         if self.compress_level < 0 or self.compress_level > 4:
@@ -120,14 +138,11 @@ class DATA:
         f.write(str(self.watermark_num_enable) + '\n')  # 4
         f.write(str(self.compress_level) + '\n')  # 5
         f.write('1:表里图匹配模式，1等量匹配 2多对一\n')
-        f.write('2:图片命名模式 1使用表图名称 2使用前缀+序号 3使用里图名称\n')
+        f.write('2:图片命名模式 1使用表图名称 2使用前缀+序号(序号自己定) 3使用里图名称 4使用前缀+序号(序号来源于里图名称数字部分)\n')
         f.write('3:水印信息\n')
-        f.write('4:是否开启水印中加入序号的功能， 0不开启 1开启\n')
+        f.write('4:是否开启造ben模式， 0不开启 1开启\n')
         f.write('5:压缩程度，0表示自动采用系统推荐的压缩度，1~4表示强制使用给定的压缩度\n')
         f.close()
-
-        f = open('i2o_mod_helper.txt', 'a', encoding='utf-8')
-        f.write(file_name + '\n')  # 追加一条设置记录
 
     # 从文件读取模式
     def read_mod(self, file_name):
@@ -142,6 +157,7 @@ class DATA:
             self.watermark_main = f.readline()[:-1]
             self.watermark_num_enable = int(f.readline()[:-1])
             self.compress_level = int(f.readline()[:-1])
+            f.close()
             return 1
 
     # 输出当前的设置
@@ -151,7 +167,9 @@ class DATA:
         if self.img_match_mod == 1:
             print('等量匹配')
         elif self.img_match_mod == 2:
-            print('多对一')
+            print('使用同一表图')
+        elif self.img_match_mod == 3:
+            print('名称匹配')
         else:
             print('未找到模式', self.img_match_mod, '请检查')
             exit_file()
@@ -160,12 +178,16 @@ class DATA:
         if self.img_name_mod == 1:
             print('使用表图名称')
         elif self.img_name_mod == 2:
-            print('使用前缀+序号')
+            print('使用前缀+序号（序号自己定）')
             if self.img_name_head != '':  # 如果为空，则说明是载入了已有的设置，但前缀和序号还未设置，待会儿会初始化。因此这里不输出。
                 print('\t前缀:', self.img_name_head)
                 print('\t起始序号:', self.img_name_tail)
         elif self.img_name_mod == 3:
             print('使用里图名称')
+        elif self.img_name_mod == 4:
+            print('使用前缀+序号（序号来源于里图文件名数字部分）')
+            if self.img_name_head != '':  # 如果为空，则说明是载入了已有的设置，但前缀和序号还未设置，待会儿会初始化。因此这里不输出。
+                print('\t前缀:', self.img_name_head)
         else:
             exit_file()
 
@@ -223,12 +245,18 @@ class DATA:
                     if use != '1':  # 重新选择
                         select = -1
                     else:  # 使用设置，检查命名模式是否为前缀+序号
-                        if self.img_name_mod == 2:
-                            print('开始设置输出图片的前缀和起始序号')
+                        if self.img_name_mod == 2:  # 前缀+序号，序号自己定
+                            print('开始设置输出图片名称的前缀和起始序号')
                             self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
                             begin_num = input('请输入起始序号:')
                             if self.img_name_head == '' or begin_num.isdigit() is False:
-                                exit_file(0)
+                                exit_file()
                             self.img_name_tail = int(begin_num)
+                        elif self.img_name_mod == 4:  # 前缀+序号，序号来自于里图文件名数字部分
+                            print('开始设置输出图片名称的前缀')
+                            self.img_name_head = input('请输入前缀(务必填写,防止长江后浪推前浪，大水冲了龙王庙):')
+                            self.img_name_tail = -1
+                            if self.img_name_head == '':
+                                exit_file()
                 else:
                     select = -1
