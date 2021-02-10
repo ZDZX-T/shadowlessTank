@@ -7,9 +7,12 @@ def is_tank(path):
     threshold_black = 40
     try:
         img = Image.open(path)
-    except IOError:
+    except Exception:  # 曾经是IOError
         return 0  # 解码不了直接返回0
-    img_rgb = img.convert('RGB')
+    try:
+        img_rgb = img.convert('RGB')
+    except Exception:  # 转换不了也直接返回0
+        return 0
     black = 0  # 是否查找到了黑色
     white = 0  # 是否查找到了白色
     for j in range(12, 15):
