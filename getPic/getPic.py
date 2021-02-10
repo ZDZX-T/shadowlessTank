@@ -6,6 +6,8 @@ from urllib.request import urlopen
 
 version = 'get_v1.0'  # 版本信息
 
+# 全局变量
+post_name = ''  # 帖子编号
 
 def init_environment():  # 初始化环境
     f = open('memory.txt', 'w', encoding='utf-8')  # 存放之前的网址记录
@@ -57,12 +59,17 @@ def get_setting():  # 得到关于自动转换图片的设置
 
 
 def get_base(u):  # 得到基础帖子网址
+    global post_name  # 帖子编号
     if '?pn=' in u:
         i = 0
         for i in range(len(u)):
             if u[i] == '?':  # 不是基础帖子
                 break
         u = u[0:i]
+    i = -1
+    while u[i] != '/':
+        i -= 1
+    post_name = u[i+1:]
     return u
 
 
@@ -74,19 +81,24 @@ def write_back(dic):  # 写回访问记录
     f.close()
 
 
-def download_pic(u):  # 下载图片
+def download_pic(u, floor_n, pic_n):  # 下载图片 （url， 楼层数， 楼层内图片数）
     i = -1
+    suffix = ''  # 图片后缀
     while u[i] != '/':
         i -= 1
-    pic_name = u[i+1:]
-    print(pic_counter, ': ', pic_name)
-    u = 'http://imgsrc.baidu.com/forum/pic/item/' + pic_name
-    request.urlretrieve(u, input_path + pic_name)
+        if u[i] == '.':  # 得到后缀
+            suffix = u[i:]
+    baidu_pic_name = u[i+1:]
+    download_pic_name = post_name + '_' + str(floor_n) + '_' + str(pic_n) + suffix
+    print(pic_counter, ': ', download_pic_name)
+    u = 'http://imgsrc.baidu.com/forum/pic/item/' + baidu_pic_name
+    request.urlretrieve(u, input_path + download_pic_name)
     time.sleep(0.1)
 
 
 if __name__ == "__main__":
-    print(version, '\r\r')  # 输出版本信息
+    print(version, '\n\n')  # 输出版本信息
+    print('下载图片命名规则:  帖子编号_楼层数_楼内图片序号.后缀')
 
     memory = get_memory()  # 获得之前的访问记录
     destination_path = get_path()  # 获得out2inside.exe所在文件路径
@@ -137,9 +149,11 @@ if __name__ == "__main__":
                         continue
                     print('到达', floor_num, '楼')
                     images = floor.find_all('img', class_='BDE_Image')  # 得到所有图片元素（无法区分是否为坦克图）
+                    in_floor_pic_counter = 0  # 楼层内图片计数
                     for img in images:
                         pic_counter += 1
-                        download_pic(img.get('src'))
+                        in_floor_pic_counter += 1
+                        download_pic(u=img.get('src'), floor_n=floor_num, pic_n=in_floor_pic_counter)
                 else:  # 楼层没有变大，说明已经到达帖子末尾
                     memory[base_url] = finish_flag  # 更新记录
                     write_back(memory)  # 写回记录
