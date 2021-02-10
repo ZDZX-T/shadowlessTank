@@ -8,7 +8,7 @@ from pathlib import Path  # 检查文件是否存在
 import tk_helper  # 先行判断一张图片是否为坦克
 
 
-print('o2i_v1.2.1', '\n')  # 输出版本信息
+print('o2i_v1.2.2', '\n')  # 输出版本信息
 print('提示:因兼容性问题，部分输出语句会以\" b\' \"开头，以\" \' \"结尾。且本程序被其他程序调用时，中文部分可能变为其他字符。')
 print('Tip: due to compatibility problems, some output statements will start with \" b\' \" and end with \" \' \". \n'
       'And when this program is called by other programs, the Chinese part may become other characters.')
