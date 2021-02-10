@@ -4,10 +4,11 @@ import time
 import os
 from urllib.request import urlopen
 
-version = 'get_v1.0'  # 版本信息
+version = 'get_v1.0.2'  # 版本信息
 
 # 全局变量
 post_name = ''  # 帖子编号
+
 
 def init_environment():  # 初始化环境
     f = open('memory.txt', 'w', encoding='utf-8')  # 存放之前的网址记录
@@ -69,7 +70,7 @@ def get_base(u):  # 得到基础帖子网址
     i = -1
     while u[i] != '/':
         i -= 1
-    post_name = u[i+1:]
+    post_name = u[i + 1:]
     return u
 
 
@@ -88,7 +89,7 @@ def download_pic(u, floor_n, pic_n):  # 下载图片 （url， 楼层数， 楼�
         i -= 1
         if u[i] == '.':  # 得到后缀
             suffix = u[i:]
-    baidu_pic_name = u[i+1:]
+    baidu_pic_name = u[i + 1:]
     download_pic_name = post_name + '_' + str(floor_n) + '_' + str(pic_n) + suffix
     print(pic_counter, ': ', download_pic_name)
     u = 'http://imgsrc.baidu.com/forum/pic/item/' + baidu_pic_name
@@ -129,7 +130,7 @@ if __name__ == "__main__":
         pic_counter = 0  # 记录下载数
         page = 1  # 页数
         while page > 0:  # 将帖子循环完
-            html = urlopen(base_url+'?pn='+str(page)).read().decode('utf-8')  # 打开指定帖子
+            html = urlopen(base_url + '?pn=' + str(page)).read().decode('utf-8')  # 打开指定帖子
             main_web = BeautifulSoup(html, 'html.parser')  # 打开指定帖子
             floors = main_web.find_all(lambda tag: tag.name == 'div' and tag.get('class') == ['l_post',
                                                                                               'l_post_bright',
